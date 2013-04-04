@@ -306,7 +306,7 @@ class RiakPBC(Int32StringReceiver):
             msg = code
         self.sendString(msg)
         self.factory.d = Deferred()
-        if self.timeout:
+        if self.timeout is not None:
             self.timeoutd = reactor.callLater(self.timeout, self._triggerTimeout)
 
         return self.factory.d

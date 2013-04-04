@@ -1027,6 +1027,7 @@ class PBCTransport(FeatureDetection):
             if stp.isIdle():
                 stp.setActive()
                 foundOne = True
+                stp.getTransport().setTimeout(self.timeout)
                 if self.debug & LOGLEVEL_TRANSPORT_VERBOSE:
                     log.msg("[%s] aquired idle transport[%d]: %s" % (self.__class__.__name__, len(self._transports),stp), logLevel = self.logToLevel)
                 defer.returnValue(stp)
