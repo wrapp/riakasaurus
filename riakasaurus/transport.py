@@ -3,7 +3,7 @@ from zope.interface import implements, Interface
 from twisted.protocols.basic import LineReceiver
 LineReceiver.MAX_LENGTH = 1024*1024*64
 
-from twisted.internet import defer, reactor, protocol
+from twisted.internet import defer, reactor, protocol, error
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
 from twisted.python import log
@@ -43,6 +43,10 @@ versions = {
     1.1: StrictVersion("1.1.0"),
     1.2: StrictVersion("1.2.0")
     }
+
+
+class TimeoutError(Exception):
+    pass
 
 
 class ITransport(Interface):
@@ -235,7 +239,11 @@ class HTTPTransport(FeatureDetection):
         self.host = client._host
         self.port = client._port
         self.client = client
+        self.timeout = None
         self._client_id = None
+
+    def setTimeout(self, t):
+        self.timeout = t
 
     def http_response(self, response):
         def haveBody(body):
@@ -270,9 +278,34 @@ class HTTPTransport(FeatureDetection):
         else:
             bodyProducer = None
 
-        return Agent(reactor).request(
+        d = Agent(reactor).request(
                 method, str(url), Headers(h), bodyProducer
             ).addCallback(self.http_response)
+
+        if self.timeout is not None:
+            # Used to figure our if cancellation is due to timing out or not.
+            timeout = self.timeout
+            d.timed_out = False
+
+            def abort():
+                d.timed_out = True
+                d.cancel()
+
+            def when_cancelled(failure):
+                failure.trap(defer.CancelledError, error.ConnectingCancelledError)
+                if d.timed_out:
+                    raise TimeoutError('Request took longer than %s seconds' % timeout)
+                return failure
+
+            def when_done(passthrough):
+                if timeoutd.active():
+                    timeoutd.cancel()
+                return passthrough
+
+            timeoutd = reactor.callLater(timeout, abort)
+            d.addErrback(when_cancelled)
+            d.addBoth(when_done)
+        return d
 
     def build_rest_path(self, bucket=None, key=None, params=None, prefix=None) :
         """

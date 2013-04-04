@@ -5,15 +5,13 @@ riakasaurus _must_ be on your PYTHONPATH
 
 """
 
-import json
-import random
 from twisted.trial import unittest
 from twisted.python import log
 from twisted.internet import defer
 
 VERBOSE = False
 
-from riakasaurus import riak
+from riakasaurus import riak, transport
 
 # uncomment to activate logging
 # import sys
@@ -110,3 +108,26 @@ class Tests(unittest.TestCase):
         self.assertEqual(n_val, 2)
         log.msg('done set_bucket_properties')
 
+    @defer.inlineCallbacks
+    def test_timeout(self):
+        """Timeouts are respected."""
+        log.msg('*** timeout')
+
+        # Set a very short timeout and expect it to trigger.
+        self.client.get_transport().setTimeout(0)
+        try:
+            yield self.bucket.get('foo')
+        except transport.TimeoutError:
+            pass
+        else:
+            assert False, 'request did not time out.'
+
+        # Set a long timeout and expect it not to trigger.
+        self.client.get_transport().setTimeout(1)
+        try:
+            yield self.bucket.get('foo')
+        except transport.TimeoutError:
+            assert False, 'request timed out unexpectedly.'
+
+        self.client.get_transport().setTimeout(None)
+        log.msg('done timeout')
