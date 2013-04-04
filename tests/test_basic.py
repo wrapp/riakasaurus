@@ -11,7 +11,7 @@ from twisted.internet import defer
 
 VERBOSE = False
 
-from riakasaurus import riak, transport
+from riakasaurus import riak, exc
 
 # uncomment to activate logging
 # import sys
@@ -117,7 +117,7 @@ class Tests(unittest.TestCase):
         self.client.get_transport().setTimeout(0)
         try:
             yield self.bucket.get('foo')
-        except transport.TimeoutError:
+        except exc.TimeoutError:
             pass
         else:
             assert False, 'request did not time out.'
@@ -126,7 +126,7 @@ class Tests(unittest.TestCase):
         self.client.get_transport().setTimeout(1)
         try:
             yield self.bucket.get('foo')
-        except transport.TimeoutError:
+        except exc.TimeoutError:
             assert False, 'request timed out unexpectedly.'
 
         self.client.get_transport().setTimeout(None)

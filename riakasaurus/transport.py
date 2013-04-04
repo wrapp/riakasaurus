@@ -26,6 +26,7 @@ from twisted.web.client import Agent
 
 from riakasaurus.riak_index_entry import RiakIndexEntry
 from riakasaurus.mapreduce import RiakLink
+from riakasaurus.exc import TimeoutError
 
 # protobuf
 from riakasaurus.tx_riak_pb import RiakPBCClient
@@ -43,10 +44,6 @@ versions = {
     1.1: StrictVersion("1.1.0"),
     1.2: StrictVersion("1.2.0")
     }
-
-
-class TimeoutError(Exception):
-    pass
 
 
 class ITransport(Interface):

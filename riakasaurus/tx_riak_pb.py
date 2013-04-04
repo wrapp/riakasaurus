@@ -11,6 +11,7 @@ from pprint import pformat
 # generated code from *.proto message definitions
 from riak_kv_pb2 import *
 from riak_pb2 import *
+from exc import TimeoutError
 
 ## Protocol codes
 MSG_CODE_ERROR_RESP = 0
@@ -47,6 +48,10 @@ MSG_CODE_SEARCH_QUERY_RESP = 28
 
 class RiakPBCException(Exception):
     pass
+
+class RiakPBCTimeoutError(RiakPBCException, TimeoutError):
+    pass
+
 
 def toHex(s):
     lst = []
@@ -314,7 +319,7 @@ class RiakPBC(Int32StringReceiver):
     def _triggerTimeout(self):
         if not self.factory.d.called:
             try:
-                self.factory.d.errback(RiakPBCException('timeout'))
+                self.factory.d.errback(RiakPBCTimeoutError('timeout'))
             except Exception, e:
                 print "Unable to handle Timeout: %s" % e
 
