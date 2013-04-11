@@ -11,6 +11,7 @@ from pprint import pformat
 # generated code from *.proto message definitions
 from riak_kv_pb2 import *
 from riak_pb2 import *
+from riak_search_pb2 import *
 
 ## Protocol codes
 MSG_CODE_ERROR_RESP = 0
@@ -72,6 +73,7 @@ class RiakPBC(Int32StringReceiver):
         MSG_CODE_LIST_BUCKETS_RESP    : RpbListBucketsResp,
         MSG_CODE_GET_BUCKET_RESP      : RpbGetBucketResp,
         MSG_CODE_GET_SERVER_INFO_RESP : RpbGetServerInfoResp,
+        MSG_CODE_SEARCH_QUERY_RESP    : RpbSearchQueryResp,
         }
 
     PBMessageTypes = {
@@ -203,20 +205,19 @@ class RiakPBC(Int32StringReceiver):
                     indexes = request.content.indexes.add()
                     indexes.key,indexes.value = l
 
-        
         for i in ['w', 'dw', 'pw']:
             if i in kwargs:
                 setattr(request, i, self._resolveNums(kwargs[i]))
 
         params = [
-            'if_modified','if_not_modified', 'if_none_match', 
+            'if_modified','if_not_modified', 'if_none_match',
             'return_head', 'return_body'
         ]
 
         for i in params:
             if i in kwargs:
                 setattr(request, i, kwargs[i])
-            
+
         if vclock:
             request.vclock = vclock
 
@@ -280,6 +281,38 @@ class RiakPBC(Int32StringReceiver):
 
         return self.__send(code,request)
 
+    def search(self, index, query, **params):
+        code = pack('B',MSG_CODE_SEARCH_QUERY_REQ)
+
+        if index is None:
+            index = 'search'
+
+        req = RpbSearchQueryReq(index=index, q=query)
+
+        if 'rows' in params:
+            req.rows = params['rows']
+        if 'start' in params:
+            req.start = params['start']
+        if 'sort' in params:
+            req.sort = params['sort']
+        if 'filter' in params:
+            req.filter = params['filter']
+        if 'df' in params:
+            req.df = params['df']
+        if 'op' in params:
+            req.op = params['op']
+        if 'q.op' in params:
+            req.op = params['q.op']
+        if 'fl' in params:
+            if isinstance(params['fl'], list):
+                req.fl.extend(params['fl'])
+            else:
+                req.fl.append(params['fl'])
+        if 'presort' in params:
+            req.presort = params['presort']
+
+        return self.__send(code,req)
+
 
     # ------------------------------------------------------------------
     # helper functions, message parser
@@ -329,7 +362,7 @@ class RiakPBC(Int32StringReceiver):
         if self.timeoutd and not self.timeoutd.called:
             self.timeoutd.cancel()  # stop timeout from beeing raised
 
-        def returOrRaiseException(msg):
+        def returnOrRaiseException(msg):
             exc = RiakPBCException(msg)
             if self.factory.d.called:
                 raise exc

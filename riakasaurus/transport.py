@@ -1300,6 +1300,15 @@ class PBCTransport(FeatureDetection):
     def encodeJson(self, s):
         return self.client.get_encoder('application/json')(s)
 
+    @defer.inlineCallbacks
+    def search(self, index, query, **params):
+        stp = yield self._getFreeTransport()
+        transport = stp.getTransport()
+        ret = yield transport.search(index, query, **params)
+        stp.setIdle()
+        defer.returnValue(ret)
+
+
     # def deferred_sleep(self,secs):
     #     """
     #     fake deferred sleep
