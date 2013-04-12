@@ -9,9 +9,7 @@ class RiakSearch(object):
         if transport_class is None:
             transport_class = HTTPTransport
 
-        hostports = [(host, port), ]
         self._transport = transport_class(client, prefix="/solr")
-
         self._client = client
         self._decoders = {"text/xml": ElementTree.fromstring}
 
@@ -41,7 +39,7 @@ class RiakSearch(object):
         xml.appendChild(root)
 
         url = "/solr/%s/update" % index
-        self._transport.post_request(uri=url, body=xml.toxml(),
+        return self._transport.post_request(uri=url, body=xml.toxml(),
                                      content_type="text/xml")
 
     index = add
@@ -65,7 +63,7 @@ class RiakSearch(object):
         xml.appendChild(root)
 
         url = "/solr/%s/update" % index
-        self._transport.post_request(uri=url, body=xml.toxml(),
+        return self._transport.post_request(uri=url, body=xml.toxml(),
                                      content_type="text/xml")
 
     remove = delete
