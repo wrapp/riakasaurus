@@ -9,7 +9,7 @@ from struct import pack, unpack
 from pprint import pformat
 
 # generated code from *.proto message definitions
-from riakasaurus.transport.pbc import riak_kv_pb2, riak_pb2
+from riakasaurus.transport.pbc import riak_kv_pb2, riak_pb2, riak_search_pb2
 from riakasaurus import exceptions
 
 ## Protocol codes
@@ -65,6 +65,8 @@ RpbIndexResp = riak_kv_pb2.RpbIndexResp
 RpbContent = riak_kv_pb2.RpbContent
 RpbLink = riak_kv_pb2.RpbLink
 RpbBucketProps = riak_kv_pb2.RpbBucketProps
+RpbSearchQueryReq = riak_search_pb2.RpbSearchQueryReq
+RpbSearchQueryResp = riak_search_pb2.RpbSearchQueryResp
 
 RpbErrorResp = riak_pb2.RpbErrorResp
 RpbGetServerInfoResp = riak_pb2.RpbGetServerInfoResp
@@ -97,6 +99,7 @@ class RiakPBC(Int32StringReceiver):
         MSG_CODE_GET_BUCKET_RESP: RpbGetBucketResp,
         MSG_CODE_GET_SERVER_INFO_RESP: RpbGetServerInfoResp,
         MSG_CODE_INDEX_RESP: RpbIndexResp,
+        MSG_CODE_SEARCH_QUERY_RESP: RpbSearchQueryResp,
     }
 
     PBMessageTypes = {
@@ -291,6 +294,38 @@ class RiakPBC(Int32StringReceiver):
                 setattr(request, prop, self._resolveNums(kwargs[prop]))
 
         return self.__send(code, request)
+
+    def search(self, index, query, **params):
+        code = pack('B',MSG_CODE_SEARCH_QUERY_REQ)
+
+        if index is None:
+            index = 'search'
+
+        req = RpbSearchQueryReq(index=index, q=query)
+
+        if 'rows' in params:
+            req.rows = params['rows']
+        if 'start' in params:
+            req.start = params['start']
+        if 'sort' in params:
+            req.sort = params['sort']
+        if 'filter' in params:
+            req.filter = params['filter']
+        if 'df' in params:
+            req.df = params['df']
+        if 'op' in params:
+            req.op = params['op']
+        if 'q.op' in params:
+            req.op = params['q.op']
+        if 'fl' in params:
+            if isinstance(params['fl'], list):
+                req.fl.extend(params['fl'])
+            else:
+                req.fl.append(params['fl'])
+        if 'presort' in params:
+            req.presort = params['presort']
+
+        return self.__send(code,req)
 
     # ------------------------------------------------------------------
     # Bucket Operations .. getKeys, getBuckets, get/set Bucket properties
