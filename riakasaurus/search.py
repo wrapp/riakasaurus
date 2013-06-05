@@ -41,7 +41,7 @@ class RiakSearch(object):
         xml.appendChild(root)
 
         url = "/solr/%s/update" % index
-        self._transport.post_request(uri=url, body=xml.toxml(),
+        return self._transport.post_request(uri=url, body=xml.toxml(),
                                      content_type="text/xml")
 
     index = add
@@ -65,7 +65,7 @@ class RiakSearch(object):
         xml.appendChild(root)
 
         url = "/solr/%s/update" % index
-        self._transport.post_request(uri=url, body=xml.toxml(),
+        return self._transport.post_request(uri=url, body=xml.toxml(),
                                      content_type="text/xml")
 
     remove = delete
