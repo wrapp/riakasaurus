@@ -7,7 +7,7 @@ Modules based on code originally disbributed by Basho:
     http://riak.basho.com/python_client_api/riak.html
 """
 
-VERSION = '1.1.1'
+VERSION = '1.1.1a'
 
 LICENSE = """
 %s
