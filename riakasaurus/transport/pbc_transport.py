@@ -386,6 +386,14 @@ class PBCTransport(transport.FeatureDetection):
             ret = yield transport.get_index(bucket, index, startkey, endkey=endkey)
         defer.returnValue(ret)
 
+    @defer.inlineCallbacks
+    def search(self, index, query, **params):
+        stp = yield self._getFreeTransport()
+        transport = stp.getTransport()
+        ret = yield transport.search(index, query, **params)
+        stp.setIdle()
+        defer.returnValue(ret)
+
     def parseRpbGetResp(self, res):
         """
         adaptor for a RpbGetResp message
