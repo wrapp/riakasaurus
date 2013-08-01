@@ -181,7 +181,8 @@ class PBCTransport(transport.FeatureDetection):
                 self._transports.remove(stp)
         active_transports = filter(StatefulTransport.isActive, self._transports)
         dead_transports = [x for x in active_transports if x.age() > 60]
-        print 'Total transports: %s, dead transports: %s' % (self.MAX_TRANSPORTS, len(dead_transports))
+        if dead_transports:
+            print 'Total transports: %s, dead transports: %s' % (self.MAX_TRANSPORTS, len(dead_transports))
 
     @defer.inlineCallbacks
     def quit(self):
