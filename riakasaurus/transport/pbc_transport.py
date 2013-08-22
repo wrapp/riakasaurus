@@ -205,10 +205,12 @@ class PBCTransport(transport.FeatureDetection):
         self.quit()
 
     def put(self, robj, w=None, dw=None, pw=None, return_body=True,
-            if_none_match=False):
+            if_none_match=False, if_not_modified=False):
 
         ret = self.__put(robj, w, dw, pw,
-                         return_body=return_body, if_none_match=if_none_match)
+                         return_body=return_body,
+                         if_none_match=if_none_match,
+                         if_not_modified=if_not_modified)
 
         if return_body:
             return ret
@@ -226,14 +228,15 @@ class PBCTransport(transport.FeatureDetection):
 
     @defer.inlineCallbacks
     def __put(self, robj, w=None, dw=None, pw=None, return_body=True,
-              if_none_match=False):
+              if_none_match=False, if_not_modified=False):
         # std kwargs
         kwargs = {
                 'w': w,
                 'dw': dw,
                 'pw': pw,
                 'return_body': return_body,
-                'if_none_match': if_none_match
+                'if_none_match': if_none_match,
+                'if_not_modified': if_not_modified
             }
         # vclock
         vclock = robj.vclock() or None

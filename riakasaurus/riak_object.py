@@ -393,7 +393,7 @@ class RiakObject(object):
 
     @defer.inlineCallbacks
     def store(self, w=None, dw=None, pw=None, return_body=True,
-              if_none_match=False):
+              if_none_match=False, if_not_modified=False):
         """
         Store the object in Riak. When this operation completes, the
         object could contain new metadata and possibly new data if Riak
@@ -426,7 +426,8 @@ class RiakObject(object):
 
         if self._key is None:
             key, vclock, metadata = yield t.put_new(self, w=w, dw=dw, pw=pw,
-                return_body=return_body, if_none_match=if_none_match)
+                return_body=return_body, if_none_match=if_none_match,
+                if_not_modified=if_not_modified)
 
             self._exists = True
             self._key = key
