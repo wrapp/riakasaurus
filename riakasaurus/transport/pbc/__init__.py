@@ -428,6 +428,7 @@ class RiakPBC(Int32StringReceiver):
 
         def returnOrRaiseException(msg):
             exc = exceptions.RiakPBCException(msg)
+            exc.message = '%s says: %s' % (self.transport.getPeer(), exc.message)
             if self.factory.d.called:
                 raise exc
             else:
